@@ -1,0 +1,129 @@
+---
+title: "FingertipsR - AAA Screening"
+author: "r.massam@nhs.net"
+date: "2025-04-16"
+output:
+  html_document:
+    code_folding: hide
+    code_download: true
+    theme: cerulean
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## fingertipR {.tabset}
+### Packages
+
+Packages used
+```{r packages, results=FALSE, message=FALSE, warning=FALSE}
+
+if (!require("pacman")) install.packages("pacman"); library(pacman)
+
+p_load(fingertipsR, 
+       tidyverse,
+       dplyr,
+       gtExtras,
+       DT,
+       crosstalk,
+       knitr)
+
+# if issues with installing fingertipsR - try the below first
+# install.packages(c('knitr', 'tidyverse','curl', 'dplyr', 'gtExtras', 'DT', 'httr', 'jsonlite', 'miniUI', 'readr', 'rlang', 'shiny', 'shinycssloaders'))
+# install.packages("remotes")
+# remotes::install_github("rOpenSci/fingertipsR",
+#                         build_vignettes = TRUE,
+#                         dependencies = "suggests")
+
+dtfontsize = "85%"
+
+```
+
+<br>
+<br>
+
+### Available AAA metrics
+
+Metrics containing 'aaa' or 'aortic' or 'aneurysm'
+```{r metrics, message=FALSE}
+# The select_indicators function can be used to open a browser window to search for indicators
+# select_indicators()
+
+indicators <- indicators()
+indicators$IndicatorNameLower <- tolower(indicators$IndicatorName)
+aaa_indicators <- dplyr::filter(indicators, 
+                                grepl('aaa|aortic|aneurysm', IndicatorNameLower)) # filter to keywords
+
+DT::datatable(aaa_indicators, options = list(dom = 'Bt')) %>% 
+  DT::formatStyle(columns = 1:27,"white-space"="nowrap") %>% 
+  DT::formatStyle(columns = 1:27, fontSize = dtfontsize)
+```
+
+<br>
+<br>
+
+### Area Types available 
+
+Area Types available for AAA metric in Fingertips  
+[Metadata for AAA Screening Indicator](https://fingertips.phe.org.uk/search/aortic#page/6/gid/1/pat/159/par/K02000001/ati/15/are/E92000001/iid/92317/age/94/sex/1/cat/-1/ctp/-1/yrr/1/cid/4/tbm/1)
+
+```{r, message=FALSE}
+area_types_for_metrics <- indicator_areatypes(IndicatorID = 92317) 
+area_types_id = area_types() %>% select(AreaTypeID, AreaTypeName) %>%  unique() # get area type IDs as text
+area_types_for_metrics <- left_join(area_types_for_metrics, area_types_id) # add area type text
+DT::datatable(area_types_for_metrics, options = list(dom = 'Bt'))  %>% 
+  DT::formatStyle(columns = 1:27,"white-space"="nowrap") %>% 
+  DT::formatStyle(columns = 1:27, fontSize = dtfontsize)
+```
+
+<br>
+<br>
+
+### AAA screening coverage at LTLA
+
+```{r datatable, message=FALSE, warning=FALSE, echo=FALSE}
+df <- fingertips_data(IndicatorID = 92317,
+                      AreaTypeID = 501)
+
+latest_data <- max(df$Timeperiod)
+
+sd <- SharedData$new(df)
+
+filter_checkbox(id = "parent_filter",
+                label = "Parent Name",
+                sharedData = sd,
+                group = ~ParentName,
+                allLevels = FALSE,
+                inline = FALSE,
+                columns = 10
+              )
+
+filter_select(id = "period_filter", 
+              label = "period",
+              sharedData = sd, 
+              group = ~Timeperiod, 
+              allLevels = FALSE, 
+              multiple = TRUE)
+
+DT::datatable(sd,
+              filter = "top", 
+              options = list(
+                dom = 'Bfrtip',
+                buttons = c('copy', 'csv', 'excel')),
+              ) %>% 
+  DT::formatStyle(columns = 1:27,"white-space"="nowrap") %>% 
+  DT::formatStyle(columns = 1:27, fontSize = dtfontsize)
+
+```
+
+```{js default filter, message=FALSE, warning=FALSE, echo=FALSE}
+function filter_default(){
+  document.getElementById("period_filter").getElementsByClassName("selectized")[0].selectize.setValue("2023/24",false) 
+}
+    
+$(document).ready(filter_default);
+```
+
+
+
