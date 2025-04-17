@@ -1,0 +1,6 @@
+"0","# The select_indicators function can be used to open a browser window to search for indicators"
+"0","# select_indicators()"
+"0",""
+"0","indicators <- indicators()"
+"2","Error in indicators() : could not find function ""indicators""
+"

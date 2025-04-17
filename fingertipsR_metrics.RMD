@@ -46,7 +46,7 @@ dtfontsize = "85%"
 ### Available AAA metrics
 
 Metrics containing 'aaa' or 'aortic' or 'aneurysm'
-```{r metrics, message=FALSE}
+```{r aaa metrics, message=FALSE}
 # The select_indicators function can be used to open a browser window to search for indicators
 # select_indicators()
 
@@ -60,6 +60,15 @@ DT::datatable(aaa_indicators, options = list(dom = 'Bt')) %>%
   DT::formatStyle(columns = 1:27, fontSize = dtfontsize)
 ```
 
+<br>
+<br>
+
+All metrics
+```{r all metrics, message=FALSE}
+DT::datatable(indicators, options = list(dom = 'Bfrtip')) %>% 
+  DT::formatStyle(columns = 1:27,"white-space"="nowrap") %>% 
+  DT::formatStyle(columns = 1:27, fontSize = dtfontsize)
+```
 <br>
 <br>
 
